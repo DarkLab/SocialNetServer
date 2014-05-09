@@ -8,6 +8,8 @@ import org.springframework.data.neo4j.config.EnableNeo4jRepositories;
 import org.springframework.data.neo4j.config.Neo4jConfiguration;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 
+import org.neo4j.gis.spatial.SpatialDatabaseService;
+
 @Configuration
 @EnableNeo4jRepositories("com.socialnet.domain")
 public class Neo4jConfig extends Neo4jConfiguration{
@@ -21,8 +23,11 @@ public class Neo4jConfig extends Neo4jConfiguration{
 	@Bean(destroyMethod = "shutdown")
 	public GraphDatabaseService graphDatabaseService() {
 		return new GraphDatabaseFactory().newEmbeddedDatabase(DATABASE_LOCATION);
-		
-		
+	}
+	
+	@Bean
+	public SpatialDatabaseService SpatialDatabaseService(){
+		return new SpatialDatabaseService(graphDatabaseService());
 	}
 	
 	@Bean public Neo4jTemplate neo4jTemplate() {

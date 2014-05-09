@@ -9,6 +9,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.neo4j.core.GraphDatabase;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,13 +23,14 @@ import com.socialnet.domain.models.Alias;
 import com.socialnet.domain.models.Profile;
 import com.socialnet.domain.models.SNUser;
 import com.socialnet.domain.models.Profile.IdentityProvider;
-import com.socialnet.domain.repositories.SNUserRepository;
+import com.socialnet.domain.repositories.UserRepository;
+import com.socialnet.service.SNUserDetails;
 
 @RestController
 public class HelloWorldController {
 
 	@Autowired
-	SNUserRepository userRepository;
+	UserRepository userRepository;
 
 	// @Autowired
 	// GraphDatabase graphDatabase;
@@ -52,6 +55,13 @@ public class HelloWorldController {
 			@RequestParam(value = "start", required = false, defaultValue = "0") Integer start,
 			@RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize) {
 
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Object principal = authentication.getPrincipal();
+		if (principal instanceof SNUserDetails) {
+			SNUserDetails userDetails = (SNUserDetails) principal;
+	        SNUser user = userDetails.getUser();
+	      }
+		
 		Page<SNUser> users = userRepository.findAll(new PageRequest(start,
 				pageSize));
 

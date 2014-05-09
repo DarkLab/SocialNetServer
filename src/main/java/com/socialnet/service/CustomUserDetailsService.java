@@ -17,25 +17,26 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.socialnet.domain.models.SNUser;
-import com.socialnet.domain.repositories.SNUserRepository;
+import com.socialnet.domain.repositories.UserRepository;
 
 @Service("userDetailsService")
 public class CustomUserDetailsService implements UserDetailsService{
 	
 	@Autowired
-	SNUserRepository snUserRepository;
+	UserRepository snUserRepository;
 	
 	@Override
 	public UserDetails loadUserByUsername(String username)
 			throws UsernameNotFoundException {
-		UserDetails user = null;
+		SNUserDetails userDetails = null;
 		//this.getUserFromSession();
-		SNUser snUser = snUserRepository.findByUserId(username);
-		if (snUser != null) {
-			user = new User(username, "password", true, true, true, true, this.getAuthorities(false));
+		SNUser user = snUserRepository.findByUserId(username);
+		if (user != null) {
+			//user = new SNUserDetails(username, "password", true, true, true, true, this.getAuthorities(false));
+			userDetails = new SNUserDetails(user);
 		}
 		
-		return user;
+		return userDetails;
 	}
 	
 	private Collection<? extends GrantedAuthority> getAuthorities(boolean isAdmin) {
@@ -47,15 +48,15 @@ public class CustomUserDetailsService implements UserDetailsService{
         return authList;
     }
 	
-	public User getUserFromSession() {
+	/*public User getUserFromSession() {
 	      SecurityContext context = SecurityContextHolder.getContext();
 	      Authentication authentication = context.getAuthentication();
 	      Object principal = authentication.getPrincipal();
-	      /*if (principal instanceof CineastsUserDetails) {
+	      if (principal instanceof CineastsUserDetails) {
 	          CineastsUserDetails userDetails = (CineastsUserDetails) principal;
 	          return userDetails.getUser();
-	      }*/
+	      }
 	      return null;
-	  }
+	  }*/
 
 }

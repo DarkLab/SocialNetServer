@@ -63,9 +63,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		 */
 
 		http
-		// .addFilterBefore(appTokenFilter(), LogoutFilter.class)
+			.addFilterBefore(appTokenFilter(), LogoutFilter.class)
 		// .addFilterBefore(authenticationFilter(), LogoutFilter.class)
-		.csrf().disable().sessionManagement()
+			.csrf().disable().sessionManagement()
 				.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
 				.and().formLogin().successHandler(successHandler)
@@ -93,8 +93,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth)
 			throws Exception {
-		auth.authenticationProvider(authenticationProvider);
-		// userDetailsService(userDetailsService);
+		auth.//authenticationProvider(authenticationProvider);
+		userDetailsService(userDetailsService);
 		/*
 		 * .inMemoryAuthentication() .withUser("user") .password("password")
 		 * .roles("USER") .and() .withUser("admin") .password("password")

@@ -7,7 +7,7 @@ import org.springframework.data.repository.query.Param;
 import com.socialnet.domain.models.SNUser;
 import com.socialnet.domain.models.Profile;
 
-public interface SNUserRepository extends GraphRepository<SNUser> {
+public interface UserRepository extends GraphRepository<SNUser> {
 
 	//SNUser findByAliasesIdentifier(String identifier);
     //SNUser findByFirstName(String firstName);

@@ -3,6 +3,7 @@ package com.socialnet.domain.models;
 import org.springframework.data.neo4j.annotation.GraphId;
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
+import org.springframework.data.neo4j.support.index.IndexType;
 
 @NodeEntity
 public class Profile {
@@ -52,7 +53,7 @@ public class Profile {
 	}
 
 	double lat, lon;
-	// @Indexed(indexType = IndexType.POINT, indexName = "locations")
+	//@Indexed(indexType = IndexType.POINT, indexName = "locations")
 	String wkt;
 
 	/*
