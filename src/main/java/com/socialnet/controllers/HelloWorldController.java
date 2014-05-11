@@ -109,7 +109,7 @@ public class HelloWorldController {
 		// neo4jTemplate.createRelationshipBetween(greg, facebookIdentity,
 		// KnownAs.class, "KNOWN_AS", false);
 
-		SNUser greg2 = new SNUser(UUID.randomUUID());// userRepository.findByFirstName(greg.getFirstName());
+		// userRepository.findByFirstName(greg.getFirstName());
 
 		return greg;// new Greeting(counter.incrementAndGet(),
 		// String.format(template, name));
