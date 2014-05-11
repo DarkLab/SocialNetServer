@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.socialnet.domain.models.Alias;
+import com.socialnet.domain.models.Event.Feeling;
+import com.socialnet.domain.models.Originated;
 import com.socialnet.domain.models.SNUser;
 import com.socialnet.domain.models.Profile;
 import com.socialnet.domain.repositories.AliasRepository;
@@ -29,15 +31,15 @@ public class UserManagementController {
 	UserRepository userRepository;
 
 	@Autowired
-	AliasRepository knownAsRepository;
+	AliasRepository aliasRepository;
 
 	@Autowired
-	ProfileRepository socialIdentityRepository;
+	ProfileRepository profileRepository;
 
 	@Autowired
 	Neo4jTemplate neo4jTemplate;
 	
-	protected SNUser getAiuthenticatedUser(){
+	protected SNUser getAuthenticatedUser(){
 		SNUser user = null;
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		Object principal = authentication.getPrincipal();
@@ -54,11 +56,11 @@ public class UserManagementController {
 			@RequestParam(value = "sn", required = true) Profile.IdentityProvider sn,
 			@RequestParam(value = "snid", required = true) String snid) {
 
-		Profile socialIdentity = socialIdentityRepository
+		Profile socialIdentity = profileRepository
 				.findByProviderAndProviderSpecificId(sn, snid);
 
 		if (socialIdentity != null) {
-			socialIdentityRepository.delete(socialIdentity);
+			profileRepository.delete(socialIdentity);
 
 		}
 
@@ -70,25 +72,40 @@ public class UserManagementController {
 	public SNUser loginWithSocialId(
 			@RequestParam(value = "sn", required = true) Profile.IdentityProvider sn,
 			@RequestParam(value = "snid", required = true) String snid) {
-
-		SNUser authenticatedUser = this.getAiuthenticatedUser();
 		
-		//see if we can find a profile for provided credentials 
-		SNUser user = userRepository.findByProviderAndId(sn, snid);
-		if (user == null) {
-			Profile socialIdentity = new Profile(sn, snid, 0, 0);
-			user = new SNUser(UUID.randomUUID());
+		SNUser user = null;
 
-			// have to save nodes first for RevlatedVia
-			socialIdentityRepository.save(socialIdentity);
-			userRepository.save(user);
-//			Alias knownAs =
-//					 neo4jTemplate.createRelationshipBetween
-//					 (user, socialIdentity, Alias.class, "KNOWN_AS", false);
-			Alias knownAs = user.knownAs(socialIdentity);
-			knownAsRepository.save(knownAs);
+		SNUser authenticatedUser = this.getAuthenticatedUser();
+		user = userRepository.findByProviderAndId(sn, snid);
+		if (authenticatedUser != null) {
+			//check profile exists
+			if (user != null) {
+				//Profile exists and belongs to other user
+				if (!authenticatedUser.getUserId().equals(user.getUserId())) {
+					//Message: Error
+					//TODO Exception
+					user = null;
+				} else {
+					user = authenticatedUser;
+				}
+			} else {
+				//create profile and attach to SNUser
+				user = authenticatedUser;
+				createProfileForUser(user, sn, snid);
+			}
+		} else {
+			//anonymous user
+			//see if we can find a profile for provided credentials 
 			
+			if (user == null) {
+				user = new SNUser(UUID.randomUUID());
+				userRepository.save(user);
+				createProfileForUser(user, sn, snid);
+				
+			}
 		}
+		
+		
 
 //		KnownAs knownAs = knownAsRepository.findByProviderAndId(sn, snid);
 //
@@ -131,5 +148,40 @@ public class UserManagementController {
 
 		return user;// socialIdentity.getUser();
 
+	}
+	
+	@Transactional
+	@RequestMapping(value = "/createEvent", method = RequestMethod.POST)
+	public Originated createEvent(
+			@RequestParam(value = "mySn", required = true) Profile.IdentityProvider mySn,
+			@RequestParam(value = "mySnId", required = true) String mySnId,
+			@RequestParam(value = "targetSn", required = true) Profile.IdentityProvider targetSn,
+			@RequestParam(value = "targetSnId", required = true) String targetSnId,
+			@RequestParam(value = "feeling", required = true) Feeling feeling,
+			@RequestParam(value = "rant", required = false) String rant) {
+		
+		SNUser user = userRepository.findByProviderAndId(targetSn, targetSnId);
+		SNUser authenticatedUser = this.getAuthenticatedUser();
+		
+		if (user == null) {
+			//TODO Throw exception
+			return null;
+		} else {
+			//find if event exists that authori
+		}
+		
+		return null;
+	}
+
+	private void createProfileForUser(SNUser user, Profile.IdentityProvider sn, String snid) {
+		Profile profile = new Profile(sn, snid, 0, 0);
+
+		// have to save nodes first for RevlatedVia
+		profileRepository.save(profile);
+//				Alias knownAs =
+//						 neo4jTemplate.createRelationshipBetween
+//						 (user, socialIdentity, Alias.class, "KNOWN_AS", false);
+		Alias alias = user.knownAs(profile);
+		aliasRepository.save(alias);
 	}
 }

@@ -10,7 +10,7 @@ import org.springframework.data.neo4j.support.index.IndexType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-@RelationshipEntity(type = "KNOWN_AS")
+@RelationshipEntity(type = "ALIAS")
 public class Alias {
 	@GraphId
 	private Long id;
