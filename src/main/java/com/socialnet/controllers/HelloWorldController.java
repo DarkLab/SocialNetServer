@@ -50,24 +50,6 @@ public class HelloWorldController {
 		return new SNUser(UUID.randomUUID());
 	}
 
-	@RequestMapping(value = "/findAllUsers", method = RequestMethod.POST)
-	public List<SNUser> findAllUsers(
-			@RequestParam(value = "start", required = false, defaultValue = "0") Integer start,
-			@RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize) {
-
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		Object principal = authentication.getPrincipal();
-		if (principal instanceof SNUserDetails) {
-			SNUserDetails userDetails = (SNUserDetails) principal;
-	        SNUser user = userDetails.getUser();
-	      }
-		
-		Page<SNUser> users = userRepository.findAll(new PageRequest(start,
-				pageSize));
-
-		return users.getContent();
-	}
-
 	@Transactional
 	@RequestMapping(value = "/test1", method = RequestMethod.POST)
 	public SNUser test1(
@@ -99,7 +81,7 @@ public class HelloWorldController {
 		// greg.setLastName("Simmons");
 
 		Profile facebookIdentity = new Profile(
-				IdentityProvider.FB, "1234567", 0, 0);
+				IdentityProvider.FB, "1234567");
 
 		greg.knownAs(facebookIdentity);
 

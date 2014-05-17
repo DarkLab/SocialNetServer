@@ -28,10 +28,10 @@ import org.springframework.security.web.authentication.logout.LogoutFilter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.socialnet.config.security.AppTokenFilter;
-import com.socialnet.config.security.HeaderAuthenticationFilter;
-import com.socialnet.config.security.HeaderUtil;
-import com.socialnet.config.security.SNAuthenticationProvider;
+import com.socialnet.security.AppTokenFilter;
+import com.socialnet.security.HeaderAuthenticationFilter;
+import com.socialnet.security.HeaderUtil;
+//import com.socialnet.security.SNAuthenticationProvider;
 import com.socialnet.service.CustomUserDetailsService;
 
 @Configuration
@@ -49,8 +49,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	CustomUserDetailsService userDetailsService;
 
-	@Autowired
-	SNAuthenticationProvider authenticationProvider;
+	//@Autowired
+	//SNAuthenticationProvider authenticationProvider;
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {

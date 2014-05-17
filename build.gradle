@@ -1,10 +1,10 @@
 buildscript {
     repositories {
-        maven { url "http://repo.spring.io/libs-snapshot" }
+        maven { url "http://repo.spring.io/libs-milestone" }
         mavenLocal()
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.0.0.RC5")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.0.2.RELEASE")
     }
 }
 
@@ -14,29 +14,22 @@ apply plugin: 'idea'
 apply plugin: 'spring-boot'
 
 jar {
-    baseName = 'gs-actuator-service'
+    baseName = 'gs-accessing-data-neo4j'
     version =  '0.1.0'
 }
 
 repositories {
     mavenCentral()
-    maven { url "http://repo.spring.io/libs-snapshot" }
-    maven { url "https://raw.github.com/neo4j-contrib/m2/master/releases" }
+    maven { url "http://repo.spring.io/libs-milestone" }
+    maven { url "http://m2.neo4j.org" }
 }
 
 dependencies {
-    compile("org.springframework.boot:spring-boot-starter-web")
-    compile("org.springframework.boot:spring-boot-starter-security")
-    compile("org.springframework.boot:spring-boot-starter-actuator")
-    compile("org.springframework.data:spring-data-neo4j:3.1.0.BUILD-SNAPSHOT")
-    compile("org.springframework.social:spring-social:1.0.3.RELEASE")
-	compile("org.neo4j:neo4j-spatial:0.12-neo4j-2.0.2")
-	compile("com.vividsolutions:jts:1.11")
-	compile("org.opengis:geoapi:3.0.0")
-	
+    compile("org.springframework.boot:spring-boot-starter")
+    compile("org.springframework:spring-context")
+    compile("org.springframework:spring-tx")
+    compile("org.springframework.data:spring-data-neo4j:2.3.2.RELEASE")
     compile("org.hibernate:hibernate-validator")
-    compile("joda-time:joda-time:2.3")
-    compile("org.apache.commons:commons-lang3:3.3.1")
     testCompile("junit:junit")
 }
 

@@ -17,18 +17,13 @@ public class Profile {
 	}
 
 	public Profile(IdentityProvider identityProvider,
-			String providerSpecificId, double lat, double lon) {
+			String providerSpecificId) {
 		this.provider = identityProvider;
 		this.providerSpecificId = providerSpecificId;
 		this.identifier = String.format("%s-%s", identityProvider.name(),
 				this.providerSpecificId);
 
-		if (lat != 0 && lon != 0) {
-			this.lon = lon;
-			this.lat = lat;
-			this.wkt = String.format("POINT(%f %f)", lon, lat)
-					.replace(",", ".");
-		}
+		
 	}
 
 	@GraphId
@@ -52,9 +47,7 @@ public class Profile {
 		this.identifier = id;
 	}
 
-	double lat, lon;
-	//@Indexed(indexType = IndexType.POINT, indexName = "locations")
-	String wkt;
+	
 
 	/*
 	 * protected Station() { }

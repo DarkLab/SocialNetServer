@@ -1,10 +1,16 @@
 package com.socialnet.controllers;
 
+import java.util.List;
 import java.util.UUID;
 
-import org.neo4j.kernel.api.exceptions.schema.UniqueConstraintViolationKernelException;
+
+
+
+//import org.neo4j.kernel.api.exceptions.schema.UniqueConstraintViolationKernelException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,14 +21,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.socialnet.domain.models.Alias;
+import com.socialnet.domain.models.Event;
 import com.socialnet.domain.models.Event.Feeling;
 import com.socialnet.domain.models.Originated;
 import com.socialnet.domain.models.SNUser;
 import com.socialnet.domain.models.Profile;
 import com.socialnet.domain.repositories.AliasRepository;
+import com.socialnet.domain.repositories.EventRepository;
 import com.socialnet.domain.repositories.UserRepository;
 import com.socialnet.domain.repositories.ProfileRepository;
 import com.socialnet.service.SNUserDetails;
+import com.socialnet.domain.repositories.SpatialQueries;
 
 @RestController
 public class UserManagementController {
@@ -35,6 +44,9 @@ public class UserManagementController {
 
 	@Autowired
 	ProfileRepository profileRepository;
+	
+	@Autowired
+	EventRepository eventRepository;
 
 	@Autowired
 	Neo4jTemplate neo4jTemplate;
@@ -150,31 +162,69 @@ public class UserManagementController {
 
 	}
 	
+	@RequestMapping(value = "/findAllUsers", method = RequestMethod.POST)
+	public List<SNUser> findAllUsers(
+			@RequestParam(value = "start", required = false, defaultValue = "0") Integer start,
+			@RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize) {
+
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Object principal = authentication.getPrincipal();
+		if (principal instanceof SNUserDetails) {
+			SNUserDetails userDetails = (SNUserDetails) principal;
+	        SNUser user = userDetails.getUser();
+	      }
+		
+		Page<SNUser> users = userRepository.findAll(new PageRequest(start,
+				pageSize));
+
+		return users.getContent();
+	}
+	
+	@RequestMapping(value = "/findEvents", method = RequestMethod.GET)
+	public List<Event> findEvents(
+			@RequestParam(value = "lat", required = true) Double lat,
+			@RequestParam(value = "lon", required = true) Double lon,
+			@RequestParam(value = "dist", required = false, defaultValue = "50.0") Double distance) {
+			
+		long count = eventRepository.count();
+		
+		List<Event> events = 
+				eventRepository.
+					findWithDistanceQuery(SpatialQueries.
+							withinDistanceQuery(lat, lon, distance));
+		
+		
+		return events;//.getContent();
+	}
+	
 	@Transactional
 	@RequestMapping(value = "/createEvent", method = RequestMethod.POST)
-	public Originated createEvent(
+	public Event createEvent(
 			@RequestParam(value = "mySn", required = true) Profile.IdentityProvider mySn,
 			@RequestParam(value = "mySnId", required = true) String mySnId,
 			@RequestParam(value = "targetSn", required = true) Profile.IdentityProvider targetSn,
 			@RequestParam(value = "targetSnId", required = true) String targetSnId,
-			@RequestParam(value = "feeling", required = true) Feeling feeling,
-			@RequestParam(value = "rant", required = false) String rant) {
-		
-		SNUser user = userRepository.findByProviderAndId(targetSn, targetSnId);
-		SNUser authenticatedUser = this.getAuthenticatedUser();
-		
-		if (user == null) {
-			//TODO Throw exception
-			return null;
-		} else {
-			//find if event exists that authori
-		}
-		
-		return null;
-	}
+			@RequestParam(value = "feeling", required = false) Feeling feeling,
+			@RequestParam(value = "rant", required = false) String rant,
+			@RequestParam(value = "lat", required = false) Double lat,
+			@RequestParam(value = "lon", required = false) Double lon) {
 
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Object principal = authentication.getPrincipal();
+		if (principal instanceof SNUserDetails) {
+			SNUserDetails userDetails = (SNUserDetails) principal;
+	        SNUser user = userDetails.getUser();
+	      }
+		
+		Event event = new Event(feeling, rant, lon, lat);
+		
+		eventRepository.save(event);
+		
+		return event;
+	}
+	
 	private void createProfileForUser(SNUser user, Profile.IdentityProvider sn, String snid) {
-		Profile profile = new Profile(sn, snid, 0, 0);
+		Profile profile = new Profile(sn, snid);
 
 		// have to save nodes first for RevlatedVia
 		profileRepository.save(profile);

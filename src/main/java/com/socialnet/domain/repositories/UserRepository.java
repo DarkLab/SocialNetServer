@@ -13,8 +13,8 @@ public interface UserRepository extends GraphRepository<SNUser> {
     //SNUser findByFirstName(String firstName);
     public SNUser findByUserId(String userId);
 	
-	@Query("MATCH (user:SNUser)-[:ALIAS]->(sid:Profile) " +
-			"WHERE sid.provider={p} AND sid.providerSpecificId={id} " +
+	@Query("MATCH (user:SNUser)-[:ALIAS]->(profile:Profile) " +
+			"WHERE profile.provider={p} AND profile.providerSpecificId={id} " +
 			"RETURN user;")
 	public SNUser findByProviderAndId(
 			@Param(value = "p") Profile.IdentityProvider provider,
