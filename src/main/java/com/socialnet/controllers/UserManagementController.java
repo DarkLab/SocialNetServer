@@ -1,14 +1,13 @@
 package com.socialnet.controllers;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 
 
-
 //import org.neo4j.kernel.api.exceptions.schema.UniqueConstraintViolationKernelException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
@@ -21,17 +20,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.socialnet.domain.models.Alias;
+import com.socialnet.domain.models.Day;
 import com.socialnet.domain.models.Event;
 import com.socialnet.domain.models.Event.Feeling;
-import com.socialnet.domain.models.Originated;
-import com.socialnet.domain.models.SNUser;
 import com.socialnet.domain.models.Profile;
+import com.socialnet.domain.models.SNUser;
 import com.socialnet.domain.repositories.AliasRepository;
+import com.socialnet.domain.repositories.DayRepository;
 import com.socialnet.domain.repositories.EventRepository;
-import com.socialnet.domain.repositories.UserRepository;
 import com.socialnet.domain.repositories.ProfileRepository;
-import com.socialnet.service.SNUserDetails;
 import com.socialnet.domain.repositories.SpatialQueries;
+import com.socialnet.domain.repositories.UserRepository;
+import com.socialnet.service.SNUserDetails;
+import com.socialnet.service.timeline.TimelineFactory;
 
 @RestController
 public class UserManagementController {
@@ -50,6 +51,12 @@ public class UserManagementController {
 
 	@Autowired
 	Neo4jTemplate neo4jTemplate;
+	
+	@Autowired
+	TimelineFactory timelineFactory;
+	
+	@Autowired
+	DayRepository dayRepository;
 	
 	protected SNUser getAuthenticatedUser(){
 		SNUser user = null;
@@ -166,7 +173,7 @@ public class UserManagementController {
 	public List<SNUser> findAllUsers(
 			@RequestParam(value = "start", required = false, defaultValue = "0") Integer start,
 			@RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize) {
-
+		
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		Object principal = authentication.getPrincipal();
 		if (principal instanceof SNUserDetails) {
@@ -233,5 +240,15 @@ public class UserManagementController {
 //						 (user, socialIdentity, Alias.class, "KNOWN_AS", false);
 		Alias alias = user.knownAs(profile);
 		aliasRepository.save(alias);
+	}
+	
+	@Transactional
+	@RequestMapping(value = "/testTimeline", method = RequestMethod.POST)
+	public List<Day> testTimeline(
+		@RequestParam(value = "start", required = false, defaultValue = "0") Integer start,
+		@RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize){
+		timelineFactory.createDay(new Date());
+		Page<Day> days = dayRepository.findAll(new PageRequest(start, pageSize));
+		return days.getContent();
 	}
 }
