@@ -6,6 +6,9 @@ import java.util.UUID;
 
 
 
+
+
+
 //import org.neo4j.kernel.api.exceptions.schema.UniqueConstraintViolationKernelException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,12 +22,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.socialnet.domain.models.Alias;
 import com.socialnet.domain.models.Day;
 import com.socialnet.domain.models.Event;
 import com.socialnet.domain.models.Event.Feeling;
+import com.socialnet.domain.models.Originated;
 import com.socialnet.domain.models.Profile;
 import com.socialnet.domain.models.SNUser;
+import com.socialnet.domain.models.Targeted;
 import com.socialnet.domain.repositories.AliasRepository;
 import com.socialnet.domain.repositories.DayRepository;
 import com.socialnet.domain.repositories.EventRepository;
@@ -76,7 +82,7 @@ public class UserManagementController {
 			@RequestParam(value = "snid", required = true) String snid) {
 
 		Profile socialIdentity = profileRepository
-				.findByProviderAndProviderSpecificId(sn, snid);
+				.findByProviderAndExternalId(sn, snid);
 
 		if (socialIdentity != null) {
 			profileRepository.delete(socialIdentity);
@@ -216,16 +222,49 @@ public class UserManagementController {
 			@RequestParam(value = "lat", required = false) Double lat,
 			@RequestParam(value = "lon", required = false) Double lon) {
 
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		Object principal = authentication.getPrincipal();
-		if (principal instanceof SNUserDetails) {
-			SNUserDetails userDetails = (SNUserDetails) principal;
-	        SNUser user = userDetails.getUser();
-	      }
+//		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//		Object principal = authentication.getPrincipal();
+//		if (principal instanceof SNUserDetails) {
+//			SNUserDetails userDetails = (SNUserDetails) principal;
+//	        SNUser user = userDetails.getUser();
+//	      }
+		
+		SNUser authenticatedUser = this.getAuthenticatedUser();
+		assert(authenticatedUser != null); //Should never happen
+		SNUser user = userRepository.findByProviderAndId(mySn, mySnId);
+		if (user != null) {
+			//Profile exists and belongs to other user
+			if (!authenticatedUser.getUserId().equals(user.getUserId())) {
+				ObjectMapper mapper = new ObjectMapper();
+//				ObjectNode result = Json.newObject();
+//				result.put("output", objectMapper.valueToTree(ue));
+				//TODO Exception
+				user = null;
+			} else {
+				user = authenticatedUser;
+			}
+		}
+		
+		assert(user != null);
+		
+		Profile originatorProfile = profileRepository
+				.findByProviderAndExternalId(mySn, mySnId);
+		assert(originatorProfile != null);
+		
+		Profile targetProfile = profileRepository
+				.findByProviderAndExternalId(targetSn, targetSnId);
+		if (targetProfile == null) {
+			targetProfile = new Profile(targetSn, targetSnId);
+			profileRepository.save(targetProfile);
+		}
 		
 		Event event = new Event(feeling, rant, lon, lat);
-		
 		eventRepository.save(event);
+		
+		Originated originated = new Originated(originatorProfile, event);
+		neo4jTemplate.repositoryFor(Originated.class).save(originated);
+		Targeted targeted = new Targeted(event, targetProfile);
+		neo4jTemplate.repositoryFor(Targeted.class).save(targeted);
 		
 		return event;
 	}
@@ -238,7 +277,7 @@ public class UserManagementController {
 //				Alias knownAs =
 //						 neo4jTemplate.createRelationshipBetween
 //						 (user, socialIdentity, Alias.class, "KNOWN_AS", false);
-		Alias alias = user.knownAs(profile);
+		Alias alias = user.addAlias(profile);
 		aliasRepository.save(alias);
 	}
 	
@@ -247,7 +286,7 @@ public class UserManagementController {
 	public List<Day> testTimeline(
 		@RequestParam(value = "start", required = false, defaultValue = "0") Integer start,
 		@RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize){
-		timelineFactory.createDay(new Date());
+//		timelineFactory.createDay(new Date());
 		Page<Day> days = dayRepository.findAll(new PageRequest(start, pageSize));
 		return days.getContent();
 	}

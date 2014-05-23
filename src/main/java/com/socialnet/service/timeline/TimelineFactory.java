@@ -13,16 +13,16 @@ import com.socialnet.domain.models.Day;
 
 @Service("timelineFactory")
 public class TimelineFactory {
-	@Autowired
-	GraphDatabaseService graphDatabaseService;
-
-	final ExecutionEngine engine = new ExecutionEngine(graphDatabaseService);
-
-	public Day createDay(Date date) {
-		Day day = new Day(date);
-		ExecutionResult result = engine.execute(
-                "MERGE (d:Day {date:{date}}) ON CREATE SET d.created = timestamp() RETURN d", 
-                MapUtil.map( "date", day.getDate()));
-		return day;
-	}
+//	@Autowired
+//	GraphDatabaseService graphDatabaseService;
+//
+//	final ExecutionEngine engine = new ExecutionEngine(graphDatabaseService);
+//
+//	public Day createDay(Date date) {
+//		Day day = new Day(date);
+//		ExecutionResult result = engine.execute(
+//                "MERGE (d:Day {date:{date}}) ON CREATE SET d.created = timestamp() RETURN d", 
+//                MapUtil.map( "date", day.getDate()));
+//		return day;
+//	}
 }

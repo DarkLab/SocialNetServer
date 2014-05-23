@@ -83,7 +83,7 @@ public class HelloWorldController {
 		Profile facebookIdentity = new Profile(
 				IdentityProvider.FB, "1234567");
 
-		greg.knownAs(facebookIdentity);
+		greg.addAlias(facebookIdentity);
 
 //		userRepository.save(greg);
 

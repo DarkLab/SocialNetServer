@@ -19,9 +19,9 @@ public class Profile {
 	public Profile(IdentityProvider identityProvider,
 			String providerSpecificId) {
 		this.provider = identityProvider;
-		this.providerSpecificId = providerSpecificId;
+		this.externalId = providerSpecificId;
 		this.identifier = String.format("%s-%s", identityProvider.name(),
-				this.providerSpecificId);
+				this.externalId);
 
 		
 	}
@@ -30,7 +30,7 @@ public class Profile {
 	private Long id;
 
 	private IdentityProvider provider;
-	private String providerSpecificId;
+	private String externalId;
 
 	// @RelatedTo(type="OWNED_BY", direction=Direction.OUTGOING)
 	// private SNUser user;

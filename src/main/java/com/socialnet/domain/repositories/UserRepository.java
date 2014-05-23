@@ -14,7 +14,7 @@ public interface UserRepository extends GraphRepository<SNUser> {
     public SNUser findByUserId(String userId);
 	
 	@Query("MATCH (user:SNUser)-[:ALIAS]->(profile:Profile) " +
-			"WHERE profile.provider={p} AND profile.providerSpecificId={id} " +
+			"WHERE profile.provider={p} AND profile.externalId={id} " +
 			"RETURN user;")
 	public SNUser findByProviderAndId(
 			@Param(value = "p") Profile.IdentityProvider provider,

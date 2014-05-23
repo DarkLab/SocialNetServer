@@ -29,10 +29,10 @@ public class SNUser {
 	Set<Alias> aliases = new HashSet<Alias>();
     
 
-	public Alias knownAs(Profile socialIdentity) {
-    	Alias knownAs=new Alias(this,socialIdentity);
-    	aliases.add(knownAs);
-        return knownAs;
+	public Alias addAlias(Profile profile) {
+    	Alias alias = new Alias(this, profile);
+    	aliases.add(alias);
+        return alias;
     }
 	//@RelatedTo(type="KNOWN_AS", direction=Direction.OUTGOING)
     //public @Fetch Set<SocialIdentity> identities;
