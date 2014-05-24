@@ -2,7 +2,16 @@ package com.socialnet.controllers;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+
+
+
+
+
+
+
+
 
 
 
@@ -13,6 +22,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,6 +44,8 @@ import com.socialnet.domain.models.Targeted;
 import com.socialnet.domain.repositories.AliasRepository;
 import com.socialnet.domain.repositories.DayRepository;
 import com.socialnet.domain.repositories.EventRepository;
+import com.socialnet.domain.repositories.OriginatedRepository;
+import com.socialnet.domain.repositories.OriginatedRepository.EventTarget;
 import com.socialnet.domain.repositories.ProfileRepository;
 import com.socialnet.domain.repositories.SpatialQueries;
 import com.socialnet.domain.repositories.UserRepository;
@@ -54,6 +66,9 @@ public class UserManagementController {
 	
 	@Autowired
 	EventRepository eventRepository;
+	
+	@Autowired
+	OriginatedRepository originatedRepository;
 
 	@Autowired
 	Neo4jTemplate neo4jTemplate;
@@ -193,21 +208,35 @@ public class UserManagementController {
 		return users.getContent();
 	}
 	
+	
+	@Transactional
 	@RequestMapping(value = "/findEvents", method = RequestMethod.GET)
-	public List<Event> findEvents(
+	public List<Originated> findEvents(
 			@RequestParam(value = "lat", required = true) Double lat,
 			@RequestParam(value = "lon", required = true) Double lon,
-			@RequestParam(value = "dist", required = false, defaultValue = "50.0") Double distance) {
+			@RequestParam(value = "dist", required = false, defaultValue = "50.0") Double distanceKm) {
 			
 		long count = eventRepository.count();
 		
-		List<Event> events = 
-				eventRepository.
-					findWithDistanceQuery(SpatialQueries.
-							withinDistanceQuery(lat, lon, distance));
+		//Result<Originated> or = neo4jTemplate.repositoryFor(Originated.class).findAll();
+		//Page<Originated> pg =  or.to(Originated.class).as(Page.class);
+		
+		/*Result<Event> queryResult = 
+			eventRepository.findWithinDistance("locations", lat, lon, distanceKm);
+
+		Page<Event> page = queryResult.to(Event.class).as(Page.class);*/
+		
+		List<Originated> or = originatedRepository.findWithDistanceQuery_(SpatialQueries.withinDistanceQuery(lat, lon, distanceKm));
 		
 		
-		return events;//.getContent();
+		/*Page<Product> page = result.to(Product.class).as(Page.class);
+		Iterable<String> names = result.to(String.class,
+		new ResultConverter<Map<String, Object>, String>>() {
+		public String convert(Map<String, Object> row) {
+		return (String) ((Node) row.get("name")).getProperty("name"); }
+		});*/
+		
+		return or;//.getContent();
 	}
 	
 	@Transactional

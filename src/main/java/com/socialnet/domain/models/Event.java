@@ -1,5 +1,7 @@
 package com.socialnet.domain.models;
 
+import java.util.Date;
+
 import org.joda.time.DateTime;
 import org.springframework.data.neo4j.annotation.GraphId;
 import org.springframework.data.neo4j.annotation.Indexed;
@@ -21,7 +23,7 @@ public class Event {
 	@GraphId
 	private Long id;
 
-	private DateTime dateCreated;
+	private Date dateCreated;
 	private String rant;
 	private Feeling feeling;
 	private Double latitude, longitude;
@@ -32,7 +34,7 @@ public class Event {
 	public Event(){};
 	
 	public Event(Feeling feeling, String rant, double lon, double lat) {
-		this.dateCreated = new DateTime();
+		this.dateCreated = new Date();
 		this.feeling = feeling;
 		this.rant = rant;
 		
@@ -49,7 +51,7 @@ public class Event {
 	}
 
 	@JsonSerialize(using = CustomDateSerializer.class)
-	public DateTime getDateCreated() {
+	public Date getDateCreated() {
 		return dateCreated;
 	}
 

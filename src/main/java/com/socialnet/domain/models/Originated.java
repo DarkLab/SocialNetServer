@@ -29,7 +29,7 @@ public class Originated {
 		this.event = event;
 	}
 
-	@JsonIgnore
+	//@JsonIgnore
 	public Profile getProfile() {
 		return profile;
 	}

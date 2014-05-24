@@ -11,7 +11,7 @@ public interface AliasRepository extends GraphRepository<Alias> {
 	public Alias findByProfileIdentifier(String identifier);
 
 	//@Query("start socialIdentity=node:SocialIdentity(provider={p}, providerSpecificId={id}) match (user)-[r:KNOWN_AS]->(socialIdentity) where socialIdentity.provider = {p} and socialIdentity.providerSpecificId = {id} return r")
-	@Query("MATCH (n)-[r:KNOWN_AS]->(socialIdentity) WHERE socialIdentity.provider={p} and socialIdentity.providerSpecificId={id} RETURN r")
+	@Query("MATCH (n)-[r:ALIAS]->(profile) WHERE profile.provider={p} and profile.externalId={id} RETURN r")
 	public Alias findByProviderAndId(
 			@Param("p") Profile.IdentityProvider provider,
 			@Param("id") String id);
