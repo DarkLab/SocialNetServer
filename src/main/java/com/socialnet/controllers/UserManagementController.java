@@ -6,18 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+import org.json.simple.JSONObject;
 //import org.neo4j.kernel.api.exceptions.schema.UniqueConstraintViolationKernelException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -44,8 +33,6 @@ import com.socialnet.domain.models.Targeted;
 import com.socialnet.domain.repositories.AliasRepository;
 import com.socialnet.domain.repositories.DayRepository;
 import com.socialnet.domain.repositories.EventRepository;
-import com.socialnet.domain.repositories.OriginatedRepository;
-import com.socialnet.domain.repositories.OriginatedRepository.EventTarget;
 import com.socialnet.domain.repositories.ProfileRepository;
 import com.socialnet.domain.repositories.SpatialQueries;
 import com.socialnet.domain.repositories.UserRepository;
@@ -66,9 +53,6 @@ public class UserManagementController {
 	
 	@Autowired
 	EventRepository eventRepository;
-	
-	@Autowired
-	OriginatedRepository originatedRepository;
 
 	@Autowired
 	Neo4jTemplate neo4jTemplate;
@@ -78,6 +62,8 @@ public class UserManagementController {
 	
 	@Autowired
 	DayRepository dayRepository;
+	
+	ObjectMapper mapper = new ObjectMapper();
 	
 	protected SNUser getAuthenticatedUser(){
 		SNUser user = null;
@@ -117,6 +103,9 @@ public class UserManagementController {
 
 		SNUser authenticatedUser = this.getAuthenticatedUser();
 		user = userRepository.findByProviderAndId(sn, snid);
+		//UserRepository.UserProfile userProfile = userRepository.findByProviderAndId(sn, snid);
+		//user = userProfile.getUser();
+		
 		if (authenticatedUser != null) {
 			//check profile exists
 			if (user != null) {
@@ -211,7 +200,9 @@ public class UserManagementController {
 	
 	@Transactional
 	@RequestMapping(value = "/findEvents", method = RequestMethod.GET)
-	public List<Originated> findEvents(
+	public JSONObject findEvents(
+			final @RequestParam(required = false, defaultValue = "0") Integer start,
+			final @RequestParam(required = false, defaultValue = "20") Integer limit,
 			@RequestParam(value = "lat", required = true) Double lat,
 			@RequestParam(value = "lon", required = true) Double lon,
 			@RequestParam(value = "dist", required = false, defaultValue = "50.0") Double distanceKm) {
@@ -220,23 +211,16 @@ public class UserManagementController {
 		
 		//Result<Originated> or = neo4jTemplate.repositoryFor(Originated.class).findAll();
 		//Page<Originated> pg =  or.to(Originated.class).as(Page.class);
-		
-		/*Result<Event> queryResult = 
-			eventRepository.findWithinDistance("locations", lat, lon, distanceKm);
+				
+		Page<EventRepository.FullEventPath> or = 
+				eventRepository.
+					findWithDistanceQuery(SpatialQueries.withinDistanceQuery(lat, lon, distanceKm),
+										   new PageRequest(start, limit));
 
-		Page<Event> page = queryResult.to(Event.class).as(Page.class);*/
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("events", or);//    mapper.valueToTree(or));
 		
-		List<Originated> or = originatedRepository.findWithDistanceQuery_(SpatialQueries.withinDistanceQuery(lat, lon, distanceKm));
-		
-		
-		/*Page<Product> page = result.to(Product.class).as(Page.class);
-		Iterable<String> names = result.to(String.class,
-		new ResultConverter<Map<String, Object>, String>>() {
-		public String convert(Map<String, Object> row) {
-		return (String) ((Node) row.get("name")).getProperty("name"); }
-		});*/
-		
-		return or;//.getContent();
+		return jsonObject;//.getContent();
 	}
 	
 	@Transactional
@@ -260,7 +244,13 @@ public class UserManagementController {
 		
 		SNUser authenticatedUser = this.getAuthenticatedUser();
 		assert(authenticatedUser != null); //Should never happen
+		
+		//UserRepository.UserProfile userProfile = userRepository.findByProviderAndId(mySn, mySnId);
+		
+		
 		SNUser user = userRepository.findByProviderAndId(mySn, mySnId);
+		//SNUser user = userProfile.getUser();
+		
 		if (user != null) {
 			//Profile exists and belongs to other user
 			if (!authenticatedUser.getUserId().equals(user.getUserId())) {

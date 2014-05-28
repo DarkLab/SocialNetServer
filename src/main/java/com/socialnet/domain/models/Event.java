@@ -28,6 +28,7 @@ public class Event {
 	private Feeling feeling;
 	private Double latitude, longitude;
 	
+	@JsonIgnore
 	@Indexed(indexType = IndexType.POINT, indexName = "locations")
 	private String wkt;
 
