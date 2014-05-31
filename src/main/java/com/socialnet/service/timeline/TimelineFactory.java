@@ -7,12 +7,21 @@ import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.helpers.collection.MapUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Service;
 
 import com.socialnet.domain.models.Day;
+import com.socialnet.domain.repositories.DayRepository;
 
 @Service("timelineFactory")
 public class TimelineFactory {
+	
+	@Autowired
+	Neo4jTemplate neo4jTemplate;
+	
+	@Autowired
+	DayRepository dayRepository;
+	
 //	@Autowired
 //	GraphDatabaseService graphDatabaseService;
 //
@@ -25,4 +34,14 @@ public class TimelineFactory {
 //                MapUtil.map( "date", day.getDate()));
 //		return day;
 //	}
+	public Day getDay(Date date){
+		//neo4jTemplate.repositoryFor(Day.class).findByPropertyValue(arg0, arg1)
+		String dateRepresentation = Day.formatter.print(date.getTime());
+		Day day = dayRepository.findByDate(dateRepresentation);
+		if(day == null){
+			day = new Day(date);
+			dayRepository.save(day);
+		}
+		return day;
+	}
 }

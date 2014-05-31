@@ -22,8 +22,6 @@ public class Profile {
 		this.externalId = providerSpecificId;
 		this.identifier = String.format("%s-%s", identityProvider.name(),
 				this.externalId);
-
-		
 	}
 
 	@GraphId
@@ -46,16 +44,5 @@ public class Profile {
 	public void setIdentifier(String id) {
 		this.identifier = id;
 	}
-
-	
-
-	/*
-	 * protected Station() { }
-	 * 
-	 * public Station(Short stationId, String terminalName, String name, double
-	 * lat, double lon) { this.stationId = stationId; this.name = name;
-	 * this.terminalName = terminalName; this.lon = lon; this.lat = lat;
-	 * this.wkt = String.format("POINT(%f %f)",lon,lat).replace(",","."); }
-	 */
 
 }

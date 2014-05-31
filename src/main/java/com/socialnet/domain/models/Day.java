@@ -14,7 +14,7 @@ public class Day {
 	@GraphId
 	private Long id;
 	
-	private static DateTimeFormatter formatter = 
+	public static DateTimeFormatter formatter = 
 	        DateTimeFormat.forPattern("yyyyMMdd");
 	
 	@Indexed(unique = true)
@@ -22,12 +22,18 @@ public class Day {
 
 	public Day() {}
 	
-	public Day(Date mDate){
-		date = formatter.print(mDate.getTime());
+	public Day(Date date){
+		this.setDate(date);
 	}
 
-	public String getDate() {
-		return date;
+	public void setDate(Date date){
+		this.date = formatter.print(date.getTime());
 	}
+	
+	public String getDate() {
+		return this.date;
+	}
+	
+	
 
 }

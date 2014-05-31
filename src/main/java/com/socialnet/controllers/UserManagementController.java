@@ -218,7 +218,12 @@ public class UserManagementController {
 										   new PageRequest(start, limit));
 
 		JSONObject jsonObject = new JSONObject();
-		jsonObject.put("events", or);//    mapper.valueToTree(or));
+		jsonObject.put("events", or.getContent());//    mapper.valueToTree(or));
+		jsonObject.put("size", or.getSize());
+		jsonObject.put("pageNumber", or.getNumber());
+		jsonObject.put("numberOfElements", or.getNumberOfElements());
+		jsonObject.put("totalPages", or.getTotalPages());
+		jsonObject.put("totalElements", or.getTotalElements());
 		
 		return jsonObject;//.getContent();
 	}
@@ -305,7 +310,7 @@ public class UserManagementController {
 	public List<Day> testTimeline(
 		@RequestParam(value = "start", required = false, defaultValue = "0") Integer start,
 		@RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize){
-//		timelineFactory.createDay(new Date());
+		Day day = timelineFactory.getDay(new Date());
 		Page<Day> days = dayRepository.findAll(new PageRequest(start, pageSize));
 		return days.getContent();
 	}
